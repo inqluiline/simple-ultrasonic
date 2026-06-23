@@ -1,108 +1,89 @@
-# simple-ultrasonic
-The easiest possible distance sensor tutorial — because everyone deserves to understand what their hands build.
+# Measuring Distance with an HC-SR04 Ultrasonic Sensor
 
+ok so i bought this ultrasonic sensor because i wanted to build a radar thing i saw on youtube. then it sat in a drawer for a month because every tutorial made it sound way more complicated than it actually is. turns out it's just a speaker and a microphone that use sound to measure distance. like a bat.
 
-# 📏 Simple Ultrasonic Distance Sensor
-
-*A project so simple a 10‑year‑old can build it — and understand every piece.*
-
-You will turn an **HC-SR04 ultrasonic sensor** and an **Arduino Uno** into a digital measuring tape.  
-No cloud, no imports — just sound waves and curiosity.
+this tutorial will get you from zero to reading distances in centimeters in about 15 minutes. no prior knowledge assumed. just the wire, the code, and why it works.
 
 ---
 
-## 🧠 What is an ultrasonic sensor?
+## what you need
 
-It’s like a bat. It sends out a high‑pitched *click* that human ears can’t hear, then listens for the echo.  
-By counting how long the sound takes to bounce back, it figures out how far away something is.
+| part | notes |
+|------|-------|
+| arduino uno r3 | or compatible |
+| hc-sr04 ultrasonic sensor | the one with two silver cylinders |
+| breadboard | any size |
+| 4 male-to-male jumper wires | |
 
-**The two “eyes” on the sensor:**
-- **Trig** – the mouth. It sends the sound pulse.
-- **Echo** – the ear. It listens for the return.
-
----
-
-## 🧱 What you need
-
-| Component          | Quantity |
-|--------------------|----------|
-| Arduino Uno R3     | 1        |
-| HC‑SR04 ultrasonic sensor | 1 |
-| Breadboard         | 1        |
-| Jumper wires (male‑to‑male) | 4 |
-
-**No soldering. No extra modules.**
+no soldering. no extra power supply. the arduino can power this sensor fine from its 5v pin.
 
 ---
 
-## ⚡ Wiring (text diagram)
-Arduino Uno HC-SR04
+## wiring
 
-5V ------------ VCC
-GND ------------ GND
-D9 ------------ Trig
-D10 ------------ Echo
+the sensor has 4 pins: VCC, Trig, Echo, GND.
 
+- VCC → 5V on the arduino
+- GND → GND on the arduino
+- Trig → pin 9
+- Echo → pin 10
 
-
-If your sensor module has 4 pins, that’s all of them. Power it from the Arduino’s 5V.
-
-> *Plug the sensor into your breadboard so it doesn’t dangle. Keep it pointing at an open space.*
+the first time i wired this i accidentally swapped trig and echo. the sensor just printed zeros forever and i thought it was broken. nope. just had the pins backwards. trig sends the pulse, echo listens for it — they're not interchangeable.
 
 ---
 
-## 💻 The Code
+## the code
 
-Open the Arduino IDE, copy the file `distance_meter.ino` (see below), and upload it to your board.
+the sketch is called `distance_meter.ino`. open it in the arduino ide, select your board and port, and click upload. then open the serial monitor at 9600 baud and you'll see distance readings in centimeters.
 
-Then open the **Serial Monitor** (Tools → Serial Monitor, set baud to `9600`).  
-You’ll see:
-Distance: 17.3 cm
-Distance: 17.1 cm
-Distance: 17.5 cm
-
-
-Put your hand in front of the sensor and watch the numbers change.
+in short: the code sends a short pulse from pin 9 (trig), then listens on pin 10 (echo) for how long it takes to come back. since sound travels at about 0.034 cm per microsecond, you can convert the time into distance. the formula is `distance = (time * 0.034) / 2` — you divide by 2 because the sound goes to the object AND back.
 
 ---
 
-## 🔬 How the code works (explained for a 10‑year‑old)
+## how it works
 
-1. The Arduino sends a very short `HIGH` pulse to the **Trig** pin.  
-2. The sensor sends out 8 ultrasonic clicks.  
-3. The **Echo** pin goes `HIGH` as soon as the sound leaves, and goes `LOW` when the echo returns.  
-4. The Arduino measures how many microseconds the Echo pin stayed `HIGH`.  
-5. Sound travels at **0.034 cm per microsecond** (in air).  
-6. Distance = (time × speed) ÷ 2  *(÷2 because the sound goes there AND back)*.  
+the sensor has two main parts: a tiny speaker (the transmitter) and a tiny microphone (the receiver). when you send a 10-microsecond HIGH pulse to the trig pin, the sensor sends out 8 bursts of ultrasonic sound at 40kHz — way above what humans can hear. then it listens.
 
-That’s the whole magic.
+the echo pin goes HIGH as soon as the sound leaves and stays HIGH until the echo comes back. the arduino uses `pulseIn()` to measure exactly how many microseconds that took. then the math converts time to distance.
+
+the speed of sound changes a little with temperature and humidity, but 0.034 cm/µs is close enough for room temperature. if you want extreme precision you'd need to compensate, but for most projects this is fine.
 
 ---
 
-## 🧪 Try these experiments
+## problems i hit
 
-- Point the sensor at a wall and walk backwards. What do you see?
-- Put a soft object (pillow) and a hard object (book) at the same distance. Does the reading change? Why?
-- Angle the sensor slightly — how does the beam width affect the reading?
-
----
-
-## 🤝 Why this project exists
-
-I’m Parham. I’m 15 and I live in Iran. I built this because the first step into robotics should be so clear that nobody feels stupid.  
-If you are a kid who just got their first Arduino, this is for you.  
-If you are an adult who was always afraid of wires, this is for you too.
-
-**Knowledge shouldn’t be locked behind paywalls or import sanctions. Sound waves are free.**
+- **serial monitor shows zeros and nothing changes:** i had trig and echo swapped. check your wiring.
+- **readings jump around randomly:** the sensor was pointing at a soft surface (my curtain). soft things absorb sound. point it at something solid.
+- **no readings at all, serial monitor is blank:** my usb cable was charge-only with no data lines. switched cables and it worked immediately.
+- **readings are consistently wrong by a few cm:** the sensor has a minimum range of about 2cm. anything closer than that will give bad readings. also make sure nothing is blocking the sensor's "view" — the sound spreads out in a cone.
 
 ---
 
-## 📄 License
+## next steps
 
-MIT — use this however you like, just keep it open.
+this is part of a series i'm building. so far i've done:
+- ultrasonic sensor (this one)
+- servo motor (sg90)
+
+next is the joystick module, then combining the ultrasonic and servo to make a motion tracker that points at the nearest object.
 
 ---
 
-## 📬 Contact
+## why this exists
 
-inquiline.dev@proton.me
+i'm parham. i'm 15 and i live in iran. building stuff here under sanctions means you can't just order whatever you want — you work with what you have and you share what you learn. i write these tutorials because knowledge shouldn't be behind paywalls or sanctions. if you're a kid who just got their first arduino and you're sitting there feeling lost — this is for you. seriously.
+
+---
+
+## about me
+
+i'm parham. i'm 15 and i live in iran. i write these tutorials because knowledge shouldn't be locked behind paywalls or sanctions. if you're just starting out and you feel lost — this is for you. seriously.
+
+---
+
+mit license — use this however you want, just keep it open.
+contact: inquiline.dev@proton.me
+
+---
+
+ok that's it. go measure something. if it breaks open an issue. — parham
